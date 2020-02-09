@@ -200,7 +200,8 @@ def uploadNativeImage(): Unit = {
       "-r", "typesafe:ivy-releases",
     ),
     output = dest,
-    mainClass = "coursier.cli.Coursier"
+    mainClass = "coursier.cli.Coursier",
+    useAssembly = Util.os == "win"
   )
 
   // TODO Check that we are on the right CPU too?
