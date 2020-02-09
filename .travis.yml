@@ -11,6 +11,7 @@ addons:
     update: true
 stages:
   - name: test
+    if: (branch = master AND type = push) AND (tag IS NOT present)
   - name: release-snapshot
     if: (branch = master AND type = push) AND (tag IS NOT present)
   - name: release
@@ -19,6 +20,7 @@ stages:
     if: tag IS present
   - name: upload-native-launchers
     if: tag IS present
+  - name: upload-native-launcher-windows
   - name: update-brew-formula
     if: tag IS present
   - name: update-website
@@ -68,11 +70,12 @@ jobs:
       jdk: openjdk9
       before_script: source scripts/shared/travis-setup-graalvm.sh
       script: amm launcher.sc uploadNativeImage
-    - stage: upload-native-launchers
+    - stage: upload-native-launcher-windows
       name: "Push Windows native image"
       os: windows
       language: bash
       before_script: source scripts/shared/travis-setup-graalvm.sh
+      env: TRAVIS_TAG=v2.0.0-RC6
       script: gpg --version && amm.bat launcher.sc signDummyFiles && scripts/windows-native-image.bat && gpgconf --kill gpg-agent
     - stage: update-brew-formula
       script: scripts/update-brew-formula.sh
@@ -83,7 +86,7 @@ jobs:
         - export PATH="$PATH:$(pwd)/node_modules/bower/bin"
         - amm website.sc updateWebsite
 # Only build if: master branch, a tag, or a fork
-if: branch = master
+if: branch = command-too-long-windows-ci
     OR tag IS present
     OR repo != coursier/coursier
 cache:
