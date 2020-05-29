@@ -5,8 +5,8 @@ import Publish._
 
 lazy val getSbtCoursierVersion = settingKey[String]("")
 
-getSbtCoursierVersion := {
-  sbtCoursierVersion
+ThisBuild / getSbtCoursierVersion := {
+  "foo"
 }
 
 inThisBuild(List(
@@ -476,8 +476,8 @@ lazy val docs = project("docs")
       Map(
         "VERSION" -> version0,
         "EXTRA_SBT" -> extraSbt(version0),
-        "PLUGIN_VERSION" -> sbtCoursierVersion,
-        "PLUGIN_EXTRA_SBT" -> extraSbt(sbtCoursierVersion),
+        "PLUGIN_VERSION" -> getSbtCoursierVersion.value,
+        "PLUGIN_EXTRA_SBT" -> extraSbt(getSbtCoursierVersion.value),
         "SCALA_VERSION" -> sv
       )
     }
