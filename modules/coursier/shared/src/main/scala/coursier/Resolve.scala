@@ -19,7 +19,7 @@ import dataclass.{data, since}
 
 @data class Resolve[F[_]](
   cache: Cache[F],
-  dependencies: Seq[Dependency] = Nil,
+  dependencies: Array[Dependency] = Array.empty,
   repositories: Seq[Repository] = Resolve.defaultRepositories,
   mirrorConfFiles: Seq[MirrorConfFile] = Resolve.defaultMirrorConfFiles,
   mirrors: Seq[Mirror] = Nil,
@@ -39,7 +39,7 @@ import dataclass.{data, since}
   private def transformFetcher: ResolutionProcess.Fetch[F] => ResolutionProcess.Fetch[F] =
     transformFetcherOpt.getOrElse(identity[ResolutionProcess.Fetch[F]])
 
-  def finalDependencies: Seq[Dependency] = {
+  def finalDependencies: Array[Dependency] = {
 
     val filter = Exclusions(resolutionParams.exclusions)
 
@@ -205,7 +205,7 @@ object Resolve extends PlatformResolve {
   }
 
   private[coursier] def initialResolution(
-    dependencies: Seq[Dependency],
+    dependencies: Array[Dependency],
     params: ResolutionParams = ResolutionParams(),
     initialResolutionOpt: Option[Resolution] = None
   ): Resolution = {
@@ -286,7 +286,7 @@ object Resolve extends PlatformResolve {
         else Some(params.profiles.iterator.map(p => if (p.startsWith("!")) p.drop(1) -> false else p -> true).toMap)
       )
       .withMapDependencies(mapDependencies)
-      .withExtraProperties(params.properties)
+      .withExtraProperties(params.properties.toArray)
       .withForceProperties(params.forcedProperties)
       .withDefaultConfiguration(params.defaultConfiguration)
   }

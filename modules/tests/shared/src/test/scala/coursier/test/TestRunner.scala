@@ -35,7 +35,7 @@ class TestRunner[F[_]: Gather : ToFuture](
     val fetch0 = fetch(repositories0)
 
     val r = Resolution()
-      .withRootDependencies(deps)
+      .withRootDependencies(deps.toArray)
       .withFilter(filter)
       .withUserActivations(profiles.map(_.iterator.map(p => if (p.startsWith("!")) p.drop(1) -> false else p -> true).toMap))
       .withMapDependencies(mapDependencies)
@@ -95,7 +95,7 @@ class TestRunner[F[_]: Gather : ToFuture](
       def tryRead = textResource(path)
 
       val dep = Dependency(module, version).withConfiguration(configuration)
-      val res = await(resolve(Seq(dep), extraRepos = extraRepos, profiles = profiles, forceVersions = forceVersions, defaultConfiguration = defaultConfiguration))
+      val res = await(resolve(Array(dep), extraRepos = extraRepos, profiles = profiles, forceVersions = forceVersions, defaultConfiguration = defaultConfiguration))
 
       val result = res
         .orderedDependencies
@@ -167,7 +167,7 @@ class TestRunner[F[_]: Gather : ToFuture](
   )(
     f: Seq[Artifact] => T
   ): Future[T] =
-    withArtifacts(Seq(dep), extraRepos, classifierOpt)(f)
+    withArtifacts(Array(dep), extraRepos, classifierOpt)(f)
 
   def withArtifacts[T](
     deps: Seq[Dependency],

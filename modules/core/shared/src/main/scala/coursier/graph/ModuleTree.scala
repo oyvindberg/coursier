@@ -19,7 +19,7 @@ object ModuleTree {
 
   def apply(
     resolution: Resolution,
-    roots: Seq[Dependency] = null
+    roots: Array[Dependency] = null
   ): Seq[ModuleTree] =
     apply(DependencyTree(resolution, roots))
 

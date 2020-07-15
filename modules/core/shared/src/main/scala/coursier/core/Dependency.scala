@@ -45,9 +45,6 @@ import dataclass.data
 
   lazy val clearExclusions: Dependency =
     withExclusions(Set.empty)
-
-  override lazy val hashCode: Int =
-    tuple.hashCode()
 }
 
 object Dependency {

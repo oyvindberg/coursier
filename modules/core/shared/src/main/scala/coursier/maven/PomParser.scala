@@ -152,7 +152,7 @@ object PomParser {
       val versionOpt = Some(version).filter(_.nonEmpty)
         .orElse(Some(parentVersion).filter(_.nonEmpty))
 
-      val properties0 = properties.toList
+      val properties0 = properties.toArray
 
       val parentModuleOpt =
         (parentGroupIdOpt, parentArtifactIdOpt) match {
@@ -219,7 +219,7 @@ object PomParser {
         Project(
           projModule,
           finalVersion,
-          (relocationDependencyOpt.toList ::: dependencies.toList).map {
+          (relocationDependencyOpt.toArray ++ dependencies).map {
             case (config, dep0) =>
               val dep = extraAttrsMap.get(dep0.moduleVersion).fold(dep0)(attrs =>
                 dep0.withModule(dep0.module.withAttributes(attrs))
@@ -228,9 +228,9 @@ object PomParser {
           },
           Map.empty,
           parentOpt,
-          dependencyManagement.toList,
+          dependencyManagement.toArray,
           properties0,
-          profiles.toList,
+          profiles.toArray,
           None,
           None,
           packagingOpt,
@@ -384,8 +384,8 @@ object PomParser {
               ),
               state.profileActivationJdkOpt
             ),
-            state.profileDependencies.toList,
-            state.profileDependencyManagement.toList,
+            state.profileDependencies.toArray,
+            state.profileDependencyManagement.toArray,
             state.profileProperties
           )
           add(state, p)

@@ -44,7 +44,7 @@ object Resolution {
     osInfo: Activation.Os,
     jdkVersion: Option[Version],
     userActivations: Option[Map[String, Boolean]]
-  ): Seq[Profile] =
+  ): Array[Profile] =
     project.profiles.filter { profile =>
       profileIsActive(
         profile,
@@ -63,7 +63,7 @@ object Resolution {
 
     def addSeq(
       dict: Map[Key, (Configuration, Dependency)],
-      deps: Seq[(Configuration, Dependency)]
+      deps: Array[(Configuration, Dependency)]
     ): Map[Key, (Configuration, Dependency)] =
       if (deps.isEmpty)
         dict
@@ -83,9 +83,9 @@ object Resolution {
       }
   }
 
-  def addDependencies(deps: Seq[Seq[(Configuration, Dependency)]]): Seq[(Configuration, Dependency)] = {
+  def addDependencies(deps: Array[Array[(Configuration, Dependency)]]): Array[(Configuration, Dependency)] = {
     val res =
-      deps.foldRight(Set.empty[DepMgmt.Key], Seq.empty[(Configuration, Dependency)]) {
+      deps.foldRight(Set.empty[DepMgmt.Key], Array.empty[(Configuration, Dependency)]) {
         case (deps0, (set, acc)) =>
           val deps = deps0
             .filter{case (_, dep) => !set(DepMgmt.key(dep))}
@@ -183,9 +183,9 @@ object Resolution {
   }
 
   def withProperties(
-    dependencies: Seq[(Configuration, Dependency)],
+    dependencies: Array[(Configuration, Dependency)],
     properties: Map[String, String]
-  ): Seq[(Configuration, Dependency)] =
+  ): Array[(Configuration, Dependency)] =
     dependencies.map(withProperties(_, properties))
 
   /**
@@ -235,18 +235,17 @@ object Resolution {
    * Returns the conflicted dependencies, and the merged others.
    */
   def merge(
-    dependencies: Seq[Dependency],
+    dependencies: Array[Dependency],
     forceVersions: Map[Module, String],
     reconciliation: Option[Module => Reconciliation],
     preserveOrder: Boolean = false
-  ): (Seq[Dependency], Seq[Dependency], Map[Module, String]) = {
+  ): (Array[Dependency], Array[Dependency], Map[Module, String]) = {
     def reconcilerByMod(mod: Module): Reconciliation =
       reconciliation match {
         case Some(f) => f(mod)
         case _       => Reconciliation.Default
       }
-    val dependencies0 = dependencies.toVector
-    val mergedByModVer = dependencies0
+    val mergedByModVer = dependencies
       .groupBy(dep => dep.module)
       .map { case (module, deps) =>
         val anyOrgModule = module.withOrganization(Organization("*"))
@@ -281,14 +280,14 @@ object Resolution {
 
     val merged =
       if (preserveOrder)
-        dependencies0
+        dependencies
           .map(_.module)
           .distinct
           .map(mergedByModVer(_))
       else
         mergedByModVer
           .values
-          .toVector
+          .toArray
 
     (
       merged
@@ -309,9 +308,9 @@ object Resolution {
    * `dependencyManagement`.
    */
   def depsWithDependencyManagement(
-    dependencies: Seq[(Configuration, Dependency)],
-    dependencyManagement: Seq[(Configuration, Dependency)]
-  ): Seq[(Configuration, Dependency)] = {
+    dependencies: Array[(Configuration, Dependency)],
+    dependencyManagement: Array[(Configuration, Dependency)]
+  ): Array[(Configuration, Dependency)] = {
 
     // See http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Management
 
@@ -357,9 +356,9 @@ object Resolution {
    * Filters `dependencies` with `exclusions`.
    */
   def withExclusions(
-    dependencies: Seq[(Configuration, Dependency)],
+    dependencies: Array[(Configuration, Dependency)],
     exclusions: Set[(Organization, ModuleName)]
-  ): Seq[(Configuration, Dependency)] = {
+  ): Array[(Configuration, Dependency)] = {
 
     val filter = Exclusions(exclusions)
 
@@ -418,12 +417,12 @@ object Resolution {
     )
   }
 
-  def projectProperties(project: Project): Seq[(String, String)] = {
+  def projectProperties(project: Project): Array[(String, String)] = {
 
     val packaging = project.packagingOpt.getOrElse(Type.jar)
 
     // FIXME The extra properties should only be added for Maven projects, not Ivy ones
-    val properties0 = project.properties ++ Seq(
+    val properties0: Array[(String, String)] = project.properties ++ Array(
       // some artifacts seem to require these (e.g. org.jmock:jmock-legacy:2.5.1)
       // although I can find no mention of them in any manual / spec
       "pom.groupId"         -> project.module.organization.value,
@@ -437,9 +436,9 @@ object Resolution {
       "project.artifactId"  -> project.module.name.value,
       "project.version"     -> project.actualVersion,
       "project.packaging"   -> packaging.value
-    ) ++ project.parent.toSeq.flatMap {
-      case (parModule, parVersion) =>
-        Seq(
+    ) ++ (project.parent match {
+      case Some((parModule, parVersion)) =>
+        Array(
           "project.parent.groupId"     -> parModule.organization.value,
           "project.parent.artifactId"  -> parModule.name.value,
           "project.parent.version"     -> parVersion,
@@ -447,7 +446,8 @@ object Resolution {
           "parent.artifactId"  -> parModule.name.value,
           "parent.version"     -> parVersion
         )
-    }
+      case None => Array.empty[(String, String)]
+    })
 
     // loose attempt at substituting properties in each others in properties0
     // doesn't try to go recursive for now, but that could be made so if necessary
@@ -455,15 +455,10 @@ object Resolution {
     substitute(properties0)
   }
 
-  private def substitute(properties0: Seq[(String, String)]): Seq[(String, String)] = {
+  private def substitute(properties0: Array[(String, String)]): Array[(String, String)] = {
 
-    val done = properties0
-      .iterator
-      .collect {
-        case kv @ (_, value) if !hasProps(value) =>
-          kv
-      }
-      .toMap
+    val done: Map[String, String] =
+      properties0.collect { case kv@(_, value) if !hasProps(value) => kv }(collection.breakOut)
 
     var didSubstitutions = false
 
@@ -484,10 +479,10 @@ object Resolution {
   private def parents(
     project: Project,
     projectCache: ((Module, String)) => Option[Project]
-  ): Stream[Project] =
+  ): Array[Project] =
     project.parent.flatMap(projectCache) match {
-      case None => Stream.empty
-      case Some(parent) => parent #:: parents(parent, projectCache)
+      case None => Array.empty
+      case Some(parent) => parent +: parents(parent, projectCache)
     }
 
   /**
@@ -502,12 +497,11 @@ object Resolution {
     project: Project,
     defaultConfiguration: Configuration,
     projectCache: ((Module, String)) => Option[Project]
-  ): Seq[Dependency] = {
+  ): Array[Dependency] = {
 
     // section numbers in the comments refer to withDependencyManagement
 
     val parentProperties0 = parents(project, projectCache)
-      .toVector
       .flatMap(_.properties)
 
     val project0 = withFinalProperties(project.withProperties(parentProperties0 ++ project.properties))
@@ -545,11 +539,11 @@ object Resolution {
 
         val config = if (config0.isEmpty) Configuration.compile else config0
 
-        def default =
+        def default: Array[Dependency] =
           if (configurations(config))
-            Seq(dep)
+            Array(dep)
           else
-            Nil
+            Array.empty
 
         if (dep.configuration.nonEmpty)
           default
@@ -562,9 +556,9 @@ object Resolution {
                 else
                   defaultConfiguration
 
-              Seq(dep.withConfiguration(depConfig))
+              Array(dep.withConfiguration(depConfig))
             } else
-              Nil
+              Array.empty
           }
     }
   }
@@ -661,32 +655,26 @@ object Resolution {
  * @param errorCache: keeps track of the modules whose project definition could not be found
  */
 @data class Resolution(
-  rootDependencies: Seq[Dependency] = Nil,
+  rootDependencies: Array[Dependency] = Array.empty,
   dependencySet: DependencySet = DependencySet.empty,
   forceVersions: Map[Module, String] = Map.empty,
   conflicts: Set[Dependency] = Set.empty,
   projectCache: Map[Resolution.ModuleVersion, (ArtifactSource, Project)] = Map.empty,
   errorCache: Map[Resolution.ModuleVersion, Seq[String]] = Map.empty,
-  finalDependenciesCache: Map[Dependency, Seq[Dependency]] = Map.empty,
+  finalDependenciesCache: Map[Dependency, Array[Dependency]] = Map.empty,
   filter: Option[Dependency => Boolean] = None,
   reconciliation: Option[Module => Reconciliation] = None,
   osInfo: Activation.Os = Activation.Os.empty,
   jdkVersion: Option[Version] = None,
   userActivations: Option[Map[String, Boolean]] = None,
   mapDependencies: Option[Dependency => Dependency] = None,
-  extraProperties: Seq[(String, String)] = Nil,
+  extraProperties: Array[(String, String)] = Array.empty,
   forceProperties: Map[String, String] = Map.empty, // FIXME Make that a seq too?
   defaultConfiguration: Configuration = Configuration.defaultCompile
 ) {
 
   lazy val dependencies: Set[Dependency] =
     dependencySet.set
-
-  override lazy val hashCode: Int = {
-    var code = 17 + "coursier.core.Resolution".##
-    code = 37 * code + tuple.##
-    37 * code
-  }
 
   def withDependencies(dependencies: Set[Dependency]): Resolution =
     withDependencySet(dependencySet.setValues(dependencies))
@@ -698,7 +686,7 @@ object Resolution {
     )
 
   private def copyWithCache(
-    rootDependencies: Seq[Dependency] = rootDependencies,
+    rootDependencies: Array[Dependency] = rootDependencies,
     dependencySet: DependencySet = dependencySet,
     conflicts: Set[Dependency] = conflicts,
     errorCache: Map[Resolution.ModuleVersion, Seq[String]] = errorCache
@@ -733,9 +721,9 @@ object Resolution {
 
   import Resolution._
 
-  private[core] val finalDependenciesCache0 = new ConcurrentHashMap[Dependency, Seq[Dependency]]
+  private[core] val finalDependenciesCache0 = new ConcurrentHashMap[Dependency, Array[Dependency]]
 
-  private def finalDependencies0(dep: Dependency): Seq[Dependency] =
+  private def finalDependencies0(dep: Dependency): Array[Dependency] =
     if (dep.transitive) {
       val deps = finalDependenciesCache.getOrElse(dep, finalDependenciesCache0.get(dep))
 
@@ -746,17 +734,17 @@ object Resolution {
             val res = mapDependencies.fold(res0)(res0.map(_))
             finalDependenciesCache0.put(dep, res)
             res
-          case None => Nil
+          case None => Array.empty
         }
       else
         deps
     } else
-      Nil
+      Array.empty
 
-  def dependenciesOf(dep: Dependency): Seq[Dependency] =
+  def dependenciesOf(dep: Dependency): Array[Dependency] =
     dependenciesOf(dep, withRetainedVersions = false)
 
-  def dependenciesOf(dep: Dependency, withRetainedVersions: Boolean): Seq[Dependency] =
+  def dependenciesOf(dep: Dependency, withRetainedVersions: Boolean): Array[Dependency] =
     dependenciesOf(dep, withRetainedVersions = withRetainedVersions, withFallbackConfig = false)
 
   private def configsOf(dep: Dependency): Set[Configuration] =
@@ -777,7 +765,7 @@ object Resolution {
       dep0
   }
 
-  def dependenciesOf(dep: Dependency, withRetainedVersions: Boolean, withFallbackConfig: Boolean): Seq[Dependency] = {
+  def dependenciesOf(dep: Dependency, withRetainedVersions: Boolean, withFallbackConfig: Boolean): Array[Dependency] = {
     val deps = finalDependencies0(dep)
     if (withRetainedVersions || withFallbackConfig)
       deps.map(updated(_, withRetainedVersions, withFallbackConfig))
@@ -791,9 +779,9 @@ object Resolution {
    *
    * No attempt is made to solve version conflicts here.
    */
-  lazy val transitiveDependencies: Seq[Dependency] =
+  lazy val transitiveDependencies: Array[Dependency] =
     (dependencySet.minimizedSet -- conflicts)
-      .toVector
+      .toArray
       .flatMap(finalDependencies0)
 
   /**
@@ -807,7 +795,7 @@ object Resolution {
    * Returns a tuple made of the conflicting dependencies, all
    * the dependencies, and the retained version of each module.
    */
-  lazy val nextDependenciesAndConflicts: (Seq[Dependency], Seq[Dependency], Map[Module, String]) =
+  lazy val nextDependenciesAndConflicts: (Array[Dependency], Array[Dependency], Map[Module, String]) =
     // TODO Provide the modules whose version was forced by dependency overrides too
     merge(
       rootDependencies.map(withDefaultConfig(_, defaultConfiguration)) ++ transitiveDependencies,
@@ -869,10 +857,10 @@ object Resolution {
    *
    * The versions of all the dependencies returned are erased (emptied).
    */
-  lazy val reverseDependencies: Map[Dependency, Vector[Dependency]] = {
+  lazy val reverseDependencies: Map[Dependency, Array[Dependency]] = {
     val (updatedConflicts, updatedDeps, _) = nextDependenciesAndConflicts
 
-    val trDepsSeq =
+    val trDepsSeq: Array[(Dependency, Dependency)] =
       for {
         dep <- updatedDeps
         trDep <- finalDependencies0(dep)
@@ -884,9 +872,7 @@ object Resolution {
 
     trDepsSeq
       .groupBy(_._1)
-      .mapValues(_.map(_._2).toVector)
-      .filterKeys(knownDeps)
-      .toMap // Eagerly evaluate filterKeys/mapValues
+      .collect { case (k, vs) if knownDeps(k) => k -> vs.map(_._2) }
   }
 
   /**
@@ -903,8 +889,8 @@ object Resolution {
 
     @tailrec
     def helper(
-      reverseDeps: Map[Dependency, Vector[Dependency]]
-    ): Map[Dependency, Vector[Dependency]] = {
+      reverseDeps: Map[Dependency, Array[Dependency]]
+    ): Map[Dependency, Array[Dependency]] = {
 
       val (toRemove, remaining) = reverseDeps
         .partition(kv => kv._2.isEmpty && !rootDependencies0(kv._1))
@@ -913,13 +899,9 @@ object Resolution {
         reverseDeps
       else
         helper(
-          remaining
-            .mapValues(broughtBy =>
-              broughtBy
-                .filter(x => remaining.contains(x) || rootDependencies0(x))
-            )
-            .iterator
-            .toMap
+          remaining.map {
+            case (k, broughtBy) => k -> broughtBy.filter(x => remaining.contains(x) || rootDependencies0(x))
+          }
         )
     }
 
@@ -985,7 +967,6 @@ object Resolution {
     else {
 
       val parentProperties0 = parents(project, k => projectCache.get(k).map(_._2))
-        .toVector
         .flatMap(_.properties)
 
       // 1.1 (see above)
@@ -1100,14 +1081,13 @@ object Resolution {
 
     // A bit fragile, but seems to work
 
-    val parentProperties0 = parents(project, k => projectCache.get(k).map(_._2))
-      .toVector
+    val parentProperties0: Array[(String, String)] = parents(project, k => projectCache.get(k).map(_._2))
       .flatMap(_.properties)
 
     // 1.1 (see above)
     val approxProperties = parentProperties0.toMap ++ projectProperties(project)
 
-    val profiles0 = profiles(
+    val profiles0: Array[Profile] = profiles(
       project,
       approxProperties,
       osInfo,
@@ -1167,7 +1147,6 @@ object Resolution {
         profiles0.map(_.dependencyManagement) ++
         retainedParentProjects.map { p =>
           val parentProperties0 = parents(p, k => projectCache.get(k).map(_._2))
-            .toVector
             .flatMap(_.properties)
           val props = withFinalProperties(p.withProperties(parentProperties0 ++ p.properties)).properties.toMap
           withProperties(p.dependencyManagement, props)
@@ -1189,7 +1168,7 @@ object Resolution {
           .flatMap(projectCache(_)._2.dependencies)
       )
       .withDependencyManagement(
-        depMgmt.values.toSeq
+        depMgmt.values.toArray
           .filterNot{case (config, dep) =>
             config == Configuration.`import`
           }
@@ -1329,7 +1308,7 @@ object Resolution {
     *
     * @param dependencies: the dependencies to keep from this `Resolution`
     */
-  def subset(dependencies: Seq[Dependency]): Resolution = {
+  def subset(dependencies: Array[Dependency]): Resolution = {
 
     def updateVersion(dep: Dependency): Dependency =
       dep.withVersion(retainedVersions.getOrElse(dep.module, dep.version))

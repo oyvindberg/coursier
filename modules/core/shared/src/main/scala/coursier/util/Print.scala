@@ -90,7 +90,7 @@ object Print {
 
   def dependencyTree(
     resolution: Resolution,
-    roots: Seq[Dependency] = null,
+    roots: Array[Dependency] = null,
     printExclusions: Boolean = false,
     reverse: Boolean = false,
     colors: Boolean = true
@@ -99,7 +99,7 @@ object Print {
     val colors0 = Colors.get(colors)
 
     if (reverse) {
-      val roots0 = Option(roots).getOrElse(resolution.minDependencies.toSeq)
+      val roots0 = Option(roots).getOrElse(resolution.minDependencies.toArray)
 
       val t = ReverseModuleTree.fromDependencyTree(
         roots0.map(_.module).distinct,

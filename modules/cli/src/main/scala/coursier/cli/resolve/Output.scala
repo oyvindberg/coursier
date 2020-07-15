@@ -62,7 +62,7 @@ object Output {
             .map(ModuleMatcher(_))
           Print.dependencyTree(
             res,
-            roots = res.minDependencies.filter(f => matchers.exists(m => m.matches(f.module))).toSeq,
+            roots = res.minDependencies.filter(f => matchers.exists(m => m.matches(f.module))).toArray,
             printExclusions = withExclusions,
             reverse = true,
             colors = colors

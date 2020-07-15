@@ -18,15 +18,15 @@ object CacheDefaults {
   @deprecated("Legacy cache location support was dropped, this method does nothing.", "2.0.0-RC6-22")
   def warnLegacyCacheLocation(): Unit = {}
 
-  private def defaultConcurrentDownloadCount = 6
+  private def defaultConcurrentDownloadCount = 16
 
-  lazy val concurrentDownloadCount: Int =
-    sys.props
-      .get("coursier.parallel-download-count")
-      .flatMap(s => Try(s.toInt).toOption)
-      .getOrElse(
-        defaultConcurrentDownloadCount
-      )
+  lazy val concurrentDownloadCount: Int = defaultConcurrentDownloadCount
+//    sys.props
+//      .get("coursier.parallel-download-count")
+//      .flatMap(s => Try(s.toInt).toOption)
+//      .getOrElse(
+//        defaultConcurrentDownloadCount
+//      )
 
   lazy val pool = Sync.fixedThreadPool(concurrentDownloadCount)
 

@@ -65,7 +65,7 @@ package object coursier {
     val empty = apply()
     def apply(): Resolution =
       core.Resolution()
-    def apply(dependencies: Seq[Dependency]): Resolution =
+    def apply(dependencies: Array[Dependency]): Resolution =
       core.Resolution().withRootDependencies(dependencies)
 
     def defaultTypes: Set[Type] = coursier.core.Resolution.defaultTypes

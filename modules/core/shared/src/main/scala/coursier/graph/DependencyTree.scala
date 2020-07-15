@@ -22,7 +22,7 @@ object DependencyTree {
 
   def apply(
     resolution: Resolution,
-    roots: Seq[Dependency] = null,
+    roots: Array[Dependency] = null,
     withExclusions: Boolean = false
   ): Seq[DependencyTree] = {
 

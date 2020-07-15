@@ -741,7 +741,7 @@ object ResolveTests extends TestSuite {
 
       await(validateDependencies(res))
 
-      val subRes = res.subset(Seq(json4s))
+      val subRes = res.subset(Array(json4s))
       await(validateDependencies(subRes))
     }
 

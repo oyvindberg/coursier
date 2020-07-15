@@ -111,8 +111,10 @@ object Settings {
   )
 
   lazy val pureJava = javaScalaPluginShared ++ Seq(
-    crossPaths := false,
-    autoScalaLibrary := false
+    scalaVersion := scala212
+
+    //    crossPaths := false,
+//    autoScalaLibrary := false
   )
 
   def generatePropertyFile(dir: String) =

@@ -3,12 +3,6 @@ import Aliases._
 import Settings.{crossProject, project, _}
 import Publish._
 
-lazy val getSbtCoursierVersion = settingKey[String]("")
-
-getSbtCoursierVersion := {
-  sbtCoursierVersion
-}
-
 inThisBuild(List(
   organization := "io.get-coursier",
   homepage := Some(url("https://github.com/coursier/coursier")),
@@ -478,8 +472,8 @@ lazy val docs = project("docs")
       Map(
         "VERSION" -> version0,
         "EXTRA_SBT" -> extraSbt(version0),
-        "PLUGIN_VERSION" -> sbtCoursierVersion,
-        "PLUGIN_EXTRA_SBT" -> extraSbt(sbtCoursierVersion),
+        "PLUGIN_VERSION" -> "sbtCoursierVersion",
+        "PLUGIN_EXTRA_SBT" -> "sbtCoursierVersion-extra",
         "SCALA_VERSION" -> sv
       )
     }

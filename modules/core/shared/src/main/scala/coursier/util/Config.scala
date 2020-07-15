@@ -14,7 +14,7 @@ object Config {
 
     val allDepsByConfig = depsByConfig.map {
       case (config, deps) =>
-        config -> res.subset(deps.toVector).minDependencies
+        config -> res.subset(deps.toArray).minDependencies
     }
 
     val filteredAllDepsByConfig = allDepsByConfig.map {

@@ -70,7 +70,7 @@ object Bootstrap extends CaseApp[BootstrapOptions] {
     val perLoaderResolutions = loaderDependencies
       .map {
         case (_, deps) =>
-          res.subset(deps.map { dep =>
+          res.subset(deps.toArray.map { dep =>
             dep.dependency(
               JavaOrScalaModule.scalaBinaryVersion(scalaVersionOpt.getOrElse("")),
               scalaVersionOpt.getOrElse(""),

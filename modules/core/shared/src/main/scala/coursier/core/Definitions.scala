@@ -3,7 +3,8 @@ package coursier.core
 import coursier.util.Artifact
 import dataclass.data
 
-final case class Organization(value: String) extends AnyVal {
+final case class Organization(value: String) {
+  override lazy val hashCode: Int = value.hashCode
   def map(f: String => String): Organization =
     Organization(f(value))
 }
@@ -13,7 +14,8 @@ object Organization {
     Ordering[String].on(_.value)
 }
 
-final case class ModuleName(value: String) extends AnyVal {
+final case class ModuleName(value: String) {
+  override lazy val hashCode: Int = value.hashCode
   def map(f: String => String): ModuleName =
     ModuleName(f(value))
 }
@@ -58,12 +60,11 @@ object ModuleName {
 
   def orgName: String =
     s"${organization.value}:${name.value}"
-
-  override final lazy val hashCode = tuple.hashCode()
 }
 
 
-final case class Type(value: String) extends AnyVal {
+final case class Type(value: String) {
+  override lazy val hashCode: Int = value.hashCode
   def isEmpty: Boolean =
     value.isEmpty
   def nonEmpty: Boolean =
@@ -107,7 +108,8 @@ object Type {
   }
 }
 
-final case class Classifier(value: String) extends AnyVal {
+final case class Classifier(value: String) {
+  override lazy val hashCode: Int = value.hashCode
   def isEmpty: Boolean =
     value.isEmpty
   def nonEmpty: Boolean =
@@ -127,7 +129,8 @@ object Classifier {
   val sources = Classifier("sources")
 }
 
-final case class Extension(value: String) extends AnyVal {
+final case class Extension(value: String) {
+  override lazy val hashCode: Int = value.hashCode
   def isEmpty: Boolean =
     value.isEmpty
   def map(f: String => String): Extension =
@@ -147,7 +150,8 @@ object Extension {
   val empty = Extension("")
 }
 
-final case class Configuration(value: String) extends AnyVal {
+final case class Configuration(value: String) {
+  override lazy val hashCode: Int = value.hashCode
   def isEmpty: Boolean =
     value.isEmpty
   def nonEmpty: Boolean =
@@ -214,15 +218,15 @@ object Attributes {
   module: Module,
   version: String,
   // First String is configuration (scope for Maven)
-  dependencies: Seq[(Configuration, Dependency)],
+  dependencies: Array[(Configuration, Dependency)],
   // For Maven, this is the standard scopes as an Ivy configuration
   configurations: Map[Configuration, Seq[Configuration]],
 
   // Maven-specific
   parent: Option[(Module, String)],
-  dependencyManagement: Seq[(Configuration, Dependency)],
-  properties: Seq[(String, String)],
-  profiles: Seq[Profile],
+  dependencyManagement: Array[(Configuration, Dependency)],
+  properties: Array[(String, String)],
+  profiles: Array[Profile],
   versions: Option[Versions],
   snapshotVersioning: Option[SnapshotVersioning],
   packagingOpt: Option[Type],
@@ -284,8 +288,8 @@ object Info {
   id: String,
   activeByDefault: Option[Boolean],
   activation: Activation,
-  dependencies: Seq[(Configuration, Dependency)],
-  dependencyManagement: Seq[(Configuration, Dependency)],
+  dependencies: Array[(Configuration, Dependency)],
+  dependencyManagement: Array[(Configuration, Dependency)],
   properties: Map[String, String]
 )
 

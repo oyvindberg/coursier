@@ -204,7 +204,7 @@ object Launch extends CaseApp[LaunchOptions] {
     val fileMap = files.toMap
     val alreadyAdded = Set.empty[File] // unused???
     val parents = sharedLoaderParams.loaderNames.map { name =>
-        val deps = sharedLoaderParams.loaderDependencies.getOrElse(name, Nil)
+        val deps = sharedLoaderParams.loaderDependencies.getOrElse(name, Nil).toArray
         val subRes = res.subset(deps.map(_.dependency(JavaOrScalaModule.scalaBinaryVersion(scalaVersionOpt.getOrElse("")), scalaVersionOpt.getOrElse(""), platformOpt.getOrElse(""))))
         val artifacts = coursier.Artifacts.artifacts(
           subRes,

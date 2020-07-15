@@ -98,7 +98,7 @@ import dataclass.data
 
 
   def withDependencies(dependencies: Seq[Dependency]): Fetch[F] =
-    withResolve(resolve.withDependencies(dependencies))
+    withResolve(resolve.withDependencies(dependencies.toArray))
   def addDependencies(dependencies: Dependency*): Fetch[F] =
     withResolve(resolve.withDependencies(resolve.dependencies ++ dependencies))
 

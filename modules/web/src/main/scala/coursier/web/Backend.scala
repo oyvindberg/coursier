@@ -100,13 +100,13 @@ final class Backend($: BackendScope[_, State]) {
     val minDependencies = resolution.minDependencies
 
     lazy val reverseDeps = {
-      var m = Map.empty[Module, Seq[Dependency]]
+      var m = Map.empty[Module, Array[Dependency]]
 
       for {
         dep <- minDependencies
         trDep <- resolution.dependenciesOf(dep)
       } {
-        m += trDep.module -> (m.getOrElse(trDep.module, Nil) :+ dep)
+        m += trDep.module -> (m.getOrElse(trDep.module, Array.empty) :+ dep)
       }
 
       m
@@ -116,7 +116,7 @@ final class Backend($: BackendScope[_, State]) {
       js.Dictionary(Seq(
         "text" -> (s"${dep.module}": js.Any)
       ) ++ {
-        val deps = if (reverse) reverseDeps.getOrElse(dep.module, Nil) else resolution.dependenciesOf(dep)
+        val deps = if (reverse) reverseDeps.getOrElse(dep.module, Array.empty) else resolution.dependenciesOf(dep)
         if (deps.isEmpty) Seq()
         else Seq("nodes" -> js.Array(deps.map(tree): _*))
       }: _*)
@@ -152,7 +152,7 @@ final class Backend($: BackendScope[_, State]) {
 
       def task =
         coursier.Resolution()
-          .withRootDependencies(s.modules)
+          .withRootDependencies(s.modules.toArray)
           .withFilter(Some(dep => s.options.followOptional || !dep.optional))
           .process
           .run(fetch(s.repositories.map { case (_, repo) => repo }, AlwaysDownload(logger).fetch), 100)

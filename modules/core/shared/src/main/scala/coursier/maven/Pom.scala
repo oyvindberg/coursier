@@ -147,7 +147,7 @@ object Pom {
         .getOrElse(Seq.empty)
         .eitherTraverse(property)
 
-    } yield Profile(id, activeByDefault, activation, deps, depMgmts, properties.toMap)
+    } yield Profile(id, activeByDefault, activation, deps.toArray, depMgmts.toArray, properties.toMap)
   }
 
   def packagingOpt(pom: Node): Option[Type] =
@@ -298,7 +298,7 @@ object Pom {
       Project(
         finalProjModule,
         version,
-        (relocationDependencyOpt.toSeq ++ deps).map {
+        (relocationDependencyOpt.toArray ++ deps).map {
           case (config, dep0) =>
             val dep = extraAttrsMap.get(dep0.moduleVersion).fold(dep0)(attrs =>
               dep0.withModule(dep0.module.withAttributes(attrs))
@@ -307,9 +307,9 @@ object Pom {
         },
         Map.empty,
         parentModuleOpt.map((_, parentVersionOpt.getOrElse(""))),
-        depMgmts,
-        properties,
-        profiles,
+        depMgmts.toArray,
+        properties.toArray,
+        profiles.toArray,
         None,
         None,
         packagingOpt(pom),

@@ -27,10 +27,10 @@ abstract class CentralTests extends TestSuite {
     'logback - {
       async {
         val dep = dep"ch.qos.logback:logback-classic:1.1.3"
-        val res = await(runner.resolve(Seq(dep))).clearCaches
+        val res = await(runner.resolve(Array(dep))).clearCaches
 
         val expected = Resolution()
-          .withRootDependencies(Seq(dep))
+          .withRootDependencies(Array(dep))
           .withDependencies(
             Set(
               dep.withCompileScope,
@@ -46,10 +46,10 @@ abstract class CentralTests extends TestSuite {
     'asm - {
       async {
         val dep = dep"org.ow2.asm:asm-commons:5.0.2"
-        val res = await(runner.resolve(Seq(dep))).clearCaches
+        val res = await(runner.resolve(Array(dep))).clearCaches
 
         val expected = Resolution()
-          .withRootDependencies(Seq(dep))
+          .withRootDependencies(Array(dep))
           .withDependencies(
             Set(
               dep.withCompileScope,
@@ -65,11 +65,11 @@ abstract class CentralTests extends TestSuite {
     'jodaVersionInterval - {
       async {
         val dep = Dependency(Module(org"joda-time", name"joda-time"), "[2.2,2.8]")
-        val res0 = await(runner.resolve(Seq(dep)))
+        val res0 = await(runner.resolve(Array(dep)))
         val res = res0.clearCaches
 
         val expected = Resolution()
-          .withRootDependencies(Seq(dep))
+          .withRootDependencies(Array(dep))
           .withDependencies(Set(dep.withCompileScope))
 
         assert(res == expected)

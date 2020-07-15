@@ -28,7 +28,7 @@ object NativeBuilder {
     val coursierVersion = coursier.launcher.internal.Properties.version
     val dep = s"io.get-coursier:coursier-launcher-native_${version}_$sbv:$coursierVersion"
 
-    val files = fetch(Seq(dep))
+    val files = fetch(Array(dep))
 
     val loader = new URLClassLoader(files.map(_.toURI.toURL).toArray, parentLoader)
 

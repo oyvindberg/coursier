@@ -74,8 +74,8 @@ package object test {
         id,
         activeByDefault,
         activation,
-        dependencies,
-        dependencyManagement,
+        dependencies.toArray,
+        dependencyManagement.toArray,
         properties
       )
   }
@@ -99,12 +99,12 @@ package object test {
       core.Project(
         module,
         version,
-        dependencies,
+        dependencies.toArray,
         configurations,
         parent,
-        dependencyManagement,
-        properties,
-        profiles,
+        dependencyManagement.toArray,
+        properties.toArray,
+        profiles.toArray,
         versions,
         snapshotVersioning,
         packaging,

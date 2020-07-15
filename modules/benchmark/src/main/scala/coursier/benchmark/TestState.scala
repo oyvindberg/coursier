@@ -15,11 +15,11 @@ import scala.concurrent.duration.Duration
 class TestState {
 
   val initialSparkSqlRes = Resolve.initialResolution(
-    Seq(dep"org.apache.spark:spark-sql_2.12:2.4.0")
+    Array(dep"org.apache.spark:spark-sql_2.12:2.4.0")
   )
 
   val initialCoursierCliRes = Resolve.initialResolution(
-    Seq(dep"io.get-coursier:coursier-cli_2.12:1.1.0-M10")
+    Array(dep"io.get-coursier:coursier-cli_2.12:1.1.0-M10")
   )
 
   val repositories = Seq(

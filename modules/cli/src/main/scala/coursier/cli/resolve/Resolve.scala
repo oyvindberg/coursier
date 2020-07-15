@@ -2,7 +2,7 @@ package coursier.cli.resolve
 
 import java.io.PrintStream
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.{Executors, ExecutorService, ThreadFactory}
+import java.util.concurrent.{ExecutorService, Executors, ThreadFactory}
 
 import caseapp._
 import coursier.Resolution
@@ -17,6 +17,7 @@ import coursier.parse.JavaOrScalaModule
 import coursier.util._
 
 import scala.concurrent.ExecutionContext
+import scala.reflect.ClassTag
 
 object Resolve extends CaseApp[ResolveOptions] {
 
@@ -114,7 +115,7 @@ object Resolve extends CaseApp[ResolveOptions] {
           case (k, s) =>
             k.module(scalaVersion) -> s.map(_.module(scalaVersion))
         }
-      )
+      ).toArray
 
       // Prepend FallbackDependenciesRepository to the repository list
       // so that dependencies with URIs are resolved against this repo

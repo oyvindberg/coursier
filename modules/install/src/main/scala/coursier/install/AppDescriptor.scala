@@ -103,7 +103,7 @@ import dataclass._
       else {
         val artifactMap = res.artifacts.toMap
         val subRes = res.resolution.subset(
-          sharedDependencies.map { m =>
+          sharedDependencies.toArray.map { m =>
             val module = m.module(scalaVersion)
             val ver = res.resolution.retainedVersions.getOrElse(module, "_")
             Dependency(module, ver)
@@ -244,7 +244,7 @@ import dataclass._
               .withScalaVersionOpt(scalaVersionOpt.filter(_ => hasFullCrossVersionDeps))
 
             val res = coursier.Resolve()
-              .withDependencies(deps.take(1).map(_.withTransitive(false)))
+              .withDependencies(deps.take(1).toArray.map(_.withTransitive(false)))
               .withRepositories(repositories)
               .withResolutionParams(resolutionParams)
               .withCache(cache)

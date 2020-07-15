@@ -102,8 +102,9 @@ object Repository {
         "SHA-256" -> (underlying.url + ".sha256")
       ))
     def withDefaultSignature: Artifact =
-      underlying.withExtra(underlying.extra ++ Seq(
-        "sig" ->
+      underlying.withExtra(
+        underlying.extra.updated(
+          "sig",
           Artifact(
             underlying.url + ".asc",
             Map.empty,
@@ -111,9 +112,9 @@ object Repository {
             changing = underlying.changing,
             optional = true,
             authentication = underlying.authentication
-          )
-            .withDefaultChecksums
-      ))
+          ).withDefaultChecksums
+        )
+      )
   }
 
   trait Complete[F[_]] {
